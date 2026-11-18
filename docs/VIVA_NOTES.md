@@ -62,6 +62,17 @@ Every number here comes from a file in `experiments/`. Quote the file if you're 
   - Random Forest: bagging
   - LightGBM: boosting
   - MLP: neural network, 64-32 with early stopping
+- **Results** (`model_comparison.csv`):
+
+| Model | Family | CV macro F1 | Student-test Top-1 | Student-test macro F1 | Log loss | Continuity | Train (s) |
+|---|---|---|---|---|---|---|---|
+| LogReg | Linear | 0.837 ± 0.010 | 0.840 | 0.844 | 0.244 | 0.911 | 0.2 |
+| GaussianNB | Probabilistic | 0.828 ± 0.010 | 0.832 | 0.823 | 0.487 | 0.896 | 0.1 |
+| KNN | Instance-based | 0.887 ± 0.013 | 0.843 | 0.904 | 0.182 | 0.914 | 0.2 (but slowest inference) |
+| Random Forest | Bagging | 0.880 ± 0.015 | 0.850 | 0.884 | 0.172 | 0.916 | 18.0 |
+| LightGBM | Boosting | 0.877 ± 0.016 | 0.856 | 0.879 | 0.177 | 0.920 | 2.4 |
+| **MLP** | Neural net | **0.892 ± 0.013** | 0.849 | **0.905** | **0.129** | 0.917 | 14.0 |
+
 - **Selection:** MLP. It had the best CV macro F1 (the primary metric) and the best log loss, i.e. the best-calibrated probabilities. That matters because the HMM uses the probabilities directly as emission scores. Top-1 accuracy was within 0.5 points across RF, LightGBM and MLP.
 - **Over/underfitting:**
   - Compare CV F1 with student_test F1; they are close for all models, so there's no big overfit.
@@ -76,8 +87,25 @@ Every number here comes from a file in `experiments/`. Quote the file if you're 
   - learning_rate_init ∈ [1e-4, 1e-2], log scale
   - batch_size ∈ {128, 256, 512, 1024}
 - **Objective:** mean 5-fold GroupKFold macro F1 on the train trips only.
-- **Trials:** 25, seed 42.
-- **Tuned vs untuned:** same folds, same student_test evaluation. See the CSV.
+- **Trials:** 25, seed 42. The search took 1,839 s, about 31 min.
+- **Best:** trial 23, CV macro F1 **0.8926**, with:
+  - hidden layers 128-64-32
+  - alpha 3.7e-4
+  - learning rate 0.0096
+  - batch size 128
+- **Tuned vs untuned** (same folds, same student_test evaluation):
+
+| | CV macro F1 | Student-test Top-1 | Student-test macro F1 | Log loss | Inference |
+|---|---|---|---|---|---|
+| Untuned (64-32) | 0.8921 ± 0.0128 | 0.8485 | 0.9048 | 0.1291 | 0.26 ms / 1k rows |
+| Tuned (128-64-32) | 0.8926 ± 0.0115 | 0.8492 | 0.9032 | 0.1285 | 0.72 ms / 1k rows |
+
+- **Honest reading:**
+  - Tuning gave a very small gain: CV F1 +0.0005, slightly lower variance across folds, slightly better log loss and Top-1.
+  - Student-test macro F1 dropped by 0.0016, which is within noise.
+  - Conclusion: the default MLP was already near the ceiling for these features. The remaining errors come from label ambiguity (junctions, two-way streets), not hyperparameters.
+  - We kept the tuned model because it wins on the search objective and has better-calibrated probabilities (log loss), which helps the HMM.
+- **Limitation of the search:** epochs were capped at 60 to keep trials affordable. Trials that drew a very small learning rate hit the cap before converging (ConvergenceWarning in the log), so they are slightly undertrained, not necessarily bad settings.
 
 ## 7. HMM and Viterbi (`src/hmm/viterbi.py`, `experiments/hmm_comparison.csv`)
 - **Why:** classifying each point on its own can jump between unconnected roads. The HMM adds sequence information and road connectivity.
@@ -94,7 +122,26 @@ Every number here comes from a file in `experiments/`. Quote the file if you're 
   - When no candidate is reachable from any previous one ("disconnected road segments"), we restart the chain instead of forcing a jump.
 - **Speed:** Dijkstra runs only on roads within 300 m of the trip, with results cached per source node.
 - **β:** chosen on student_test (allowed by the guidelines). See `hmm_beta_search.csv`. A small β makes the route stricter (higher continuity); a large β trusts the classifier more.
-- **Where the HMM didn't help:** see the per-trip rows. The typical cause is a classifier that is confidently wrong on a long stretch, or label ambiguity at junctions.
+- **β search on student_test:**
+
+| β (m) | 2 | 5 | 10 | 20 | **50** | 100 |
+|---|---|---|---|---|---|---|
+| Top-1 | 0.828 | 0.846 | 0.850 | 0.854 | **0.856** | 0.855 |
+| Continuity | 0.974 | 0.974 | 0.973 | 0.970 | 0.963 | 0.955 |
+
+  We picked β = 50 (best Top-1). This is a trade-off: a smaller β gives more continuity but lower accuracy.
+- **Result (tuned MLP, student_test, all 18,426 cleaned points):**
+
+| | Top-1 accuracy | Route continuity |
+|---|---|---|
+| Classifier only | 0.8492 | 0.9176 |
+| Classifier + HMM | **0.8561** | **0.9633** |
+
+  Continuity improved on all 10 trips, and Top-1 improved on 9 of 10.
+- **Where the HMM didn't help:**
+  - Trip 56: Top-1 fell from 0.842 to 0.833, even though continuity rose from 0.886 to 0.954. The HMM forces a drivable path, and when the classifier is confidently wrong over a stretch, the path follows the wrong (but connected) road.
+  - Trip 77: barely changed (0.757 → 0.760). Most of its errors are the reverse-direction twin, plus slow, noisy sections where heading is unreliable.
+- **Error breakdown before the label fix** (useful story): 59% of errors were the reverse twin of the true arc. That led us to the direction-aware tie-break in the labels.
 
 ## 8. API and UI
 - **Laptop 1:** `uvicorn api.main:app --host 0.0.0.0 --port 8000`.
@@ -122,3 +169,20 @@ Every number here comes from a file in `experiments/`. Quote the file if you're 
 - *What does log loss tell you?* Probability quality. It matters because the HMM multiplies these probabilities.
 - *Could evaluator data leak?* No. It isn't in training. Decoder β was chosen on student_test. The prediction code (`src/pipeline.py`) never reads `.route`.
 - *Biggest limitation?* The option-A labels are approximate at junctions and on out-and-back roads. Heading is noisy at low speed. The reference route is sometimes wrong (trip 33).
+
+## 10. API results on all 10 student_test trips (tuned MLP + HMM, β = 50)
+| Trip | Top-1 | Continuity | Route-arc precision | Route-arc recall | Time |
+|---|---|---|---|---|---|
+| 00000000 | 0.946 | 0.990 | 0.851 | 0.922 | 0.34 s |
+| 00000007 | 0.906 | 0.998 | 0.960 | 0.984 | 0.16 s |
+| 00000009 | 0.835 | 0.929 | 0.894 | 0.825 | 0.25 s |
+| 00000040 | 0.929 | 0.984 | 0.895 | 0.968 | 0.39 s |
+| 00000052 | 0.973 | 0.962 | 1.000 | 0.863 | 0.05 s |
+| 00000056 | 0.833 | 0.954 | 0.954 | 0.886 | 0.78 s |
+| 00000065 | 0.863 | 0.964 | 0.894 | 0.876 | 0.17 s |
+| 00000076 | 0.814 | 0.935 | 0.783 | 0.832 | 0.52 s |
+| 00000077 | 0.760 | 0.968 | 0.720 | 0.951 | 0.62 s |
+| 00000091 | 0.832 | 0.948 | 0.905 | 0.784 | 0.17 s |
+
+These match `experiments/hmm_comparison.csv` exactly, which confirms that the API runs the same pipeline as the offline evaluation.
+Final maps (GPS / network / reference / predicted): `maps/final_00000000.html`, `final_00000076.html`, `final_00000077.html`.

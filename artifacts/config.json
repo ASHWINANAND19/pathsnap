@@ -1,0 +1,55 @@
+{
+  "model": "MLP (Optuna-tuned)",
+  "features": [
+    "dist_m",
+    "dist_rank",
+    "dist_minus_min",
+    "heading_diff_deg",
+    "arc_len_m",
+    "speed_mps",
+    "n_candidates",
+    "frac_along"
+  ],
+  "best_params": {
+    "hidden_layers": "128-64-32",
+    "alpha": 0.00037355950254731006,
+    "learning_rate_init": 0.009603554069622171,
+    "batch_size": 128
+  },
+  "candidate_radius_m": 50.0,
+  "max_candidates": 8,
+  "n_trials": 25,
+  "search_seconds": 1839.5,
+  "seed": 42,
+  "search_space": {
+    "hidden_layers": [
+      "cat",
+      [
+        "32",
+        "64",
+        "64-32",
+        "128-64",
+        "128-64-32"
+      ]
+    ],
+    "alpha": [
+      "float_log",
+      1e-05,
+      0.1
+    ],
+    "learning_rate_init": [
+      "float_log",
+      0.0001,
+      0.01
+    ],
+    "batch_size": [
+      "cat",
+      [
+        128,
+        256,
+        512,
+        1024
+      ]
+    ]
+  }
+}
