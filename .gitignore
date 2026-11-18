@@ -8,3 +8,4 @@ data_raw/
 # Evaluator-test data must never be committed into the prediction side
 data/evaluator_test/
 experiments/*.parquet
+first-eval/
