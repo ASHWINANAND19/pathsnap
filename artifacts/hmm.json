@@ -1,0 +1,5 @@
+{
+  "beta": 20.0,
+  "max_route_m": 2000,
+  "local_buffer_m": 300
+}

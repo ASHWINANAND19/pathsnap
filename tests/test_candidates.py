@@ -37,3 +37,10 @@ def test_label_is_nearest_route_arc():
     # reversed twin arc 3 has same distance but ~180° heading difference
     rev = c[c.arc_id == 3].heading_diff_deg
     assert (rev > 170).all()
+
+
+def test_twin_tie_break_uses_direction_of_travel():
+    trip = _toy_trip()
+    trip["route"] = pd.DataFrame({"arc_id": [3, 1]})  # street driven both ways: both twins on route
+    _, c = build_candidates(trip, R=50, k=8)
+    assert (c[c.label == 1].arc_id == 1).all()        # car moves west->east = arc 1, not reversed arc 3

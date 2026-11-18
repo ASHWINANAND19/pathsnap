@@ -65,16 +65,40 @@ def _gps_motion(clean):
     return heading, speed
 
 
+TIE_M = 1.0  # route arcs within this many metres of the nearest one count as "equally close"
+
+
 def true_arcs(clean, nodes_xy, arcs, route):
-    """Option A label: for each point, the closest arc on the reference route and its distance."""
+    """Option A label: for each point, the closest arc on the reference route and its distance.
+
+    Tie-break: if the car drove a street in both directions, the route contains both twin arcs
+    (u->v and v->u) with identical geometry, so "closest" is a coin-flip. Among route arcs within
+    TIE_M of the closest one, we pick the one whose direction best matches the GPS direction of travel.
+    (Without this, ~8% of labels pointed backwards.)
+    """
     route_ids = np.unique(route.arc_id.to_numpy())
     u, v = arcs.u.to_numpy()[route_ids], arcs.v.to_numpy()[route_ids]
-    lines = shapely.linestrings(np.stack([nodes_xy[u], nodes_xy[v]], axis=1))
+    a, b = nodes_xy[u], nodes_xy[v]
+    lines = shapely.linestrings(np.stack([a, b], axis=1))
+    bearing = np.degrees(np.arctan2(b[:, 0] - a[:, 0], b[:, 1] - a[:, 1])) % 360
     pts = shapely.points(clean.x.to_numpy(), clean.y.to_numpy())
     tree = shapely.STRtree(lines)
-    idx = tree.nearest(pts)
-    dist = shapely.distance(pts, lines[idx])
-    return route_ids[idx], dist
+    nearest = tree.nearest(pts)
+    d0 = shapely.distance(pts, lines[nearest])
+
+    # all route arcs that are (almost) as close as the nearest one
+    p_idx, l_idx = tree.query(pts, predicate="dwithin", distance=float(d0.max()) + TIE_M)
+    d = shapely.distance(pts[p_idx], lines[l_idx])
+    keep = d <= d0[p_idx] + TIE_M
+    p_idx, l_idx = p_idx[keep], l_idx[keep]
+    heading, _ = _gps_motion(clean)
+    hd = np.abs(heading[p_idx] - bearing[l_idx]) % 360
+    hd = np.minimum(hd, 360 - hd)
+    tie = pd.DataFrame({"p": p_idx, "l": l_idx, "hd": hd}).sort_values(["p", "hd"], kind="mergesort")
+    best = tie.drop_duplicates("p").set_index("p").l
+    chosen = nearest.copy()
+    chosen[best.index.to_numpy()] = best.to_numpy()
+    return route_ids[chosen], d0
 
 
 def build_candidates(trip, R=R_M, k=K, with_labels=True):
