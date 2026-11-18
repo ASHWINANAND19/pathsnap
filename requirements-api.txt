@@ -1,0 +1,11 @@
+# Laptop 1 (API) — same as the full requirements.txt minus notebook/UI extras
+numpy
+pandas
+scipy
+scikit-learn
+lightgbm
+shapely
+pyproj
+joblib
+fastapi
+uvicorn[standard]

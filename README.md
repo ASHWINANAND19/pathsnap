@@ -31,5 +31,28 @@ Jupyter kernel: **PathSnap (py3.12)**.
 | `maps/`, `reports/figures/` | Folium HTML maps, plots |
 | `docs/guidelines/` | Official hackathon PDFs |
 
+## Reproduce everything (Laptop 1)
+
+```bash
+python -m src.data.inventory            # dataset inventory
+python -m src.features.build_dataset    # candidates + labels + features -> experiments/*.parquet
+python -m src.models.train_compare      # 6 models, GroupKFold CV + student_test -> model_comparison.csv
+python -m src.models.tune 25            # Optuna (Bayesian) tuning of the MLP -> artifacts/model.joblib
+python -m src.hmm.evaluate_hmm          # classifier vs classifier+HMM, picks beta -> artifacts/hmm.json
+python -m pytest -q tests               # unit tests (labels, gaps, Viterbi)
+```
+EDA: `notebooks/01_eda.ipynb`. Figures go to `reports/figures/`, maps to `maps/`.
+
 ## Running the demo
-_TODO: API + UI commands once implemented._
+
+**Laptop 1 (API):**
+```bash
+# put the evaluator trip folders in data/evaluator_test/<trip_id>/ (same file format)
+uvicorn api.main:app --host 0.0.0.0 --port 8000
+ipconfig getifaddr en0                  # this laptop's IP, to give to Laptop 2
+```
+If `data/evaluator_test/` is empty, the API serves `data/student_test/` instead, which is useful for rehearsal.
+
+**Laptop 2 (UI):** see [ui/README.md](ui/README.md). In short, `pip install -r ui/requirements-ui.txt && streamlit run ui/app.py`, then enter `http://<Laptop-1-IP>:8000`.
+
+Ground truth (`.route`) is read only by `api/evaluate.py` on Laptop 1, after prediction.

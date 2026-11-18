@@ -1,0 +1,43 @@
+train rows: 331118, trips: 80, positive rate 0.176
+== logreg
+  logreg fold 0: macro F1 0.8298
+  logreg fold 1: macro F1 0.8444
+  logreg fold 2: macro F1 0.8373
+  logreg fold 3: macro F1 0.8490
+  logreg fold 4: macro F1 0.8220
+{'model': 'logreg', 'family': 'Linear', 'config': 'L2, C=1, balanced', 'cv_macro_f1_mean': np.float64(0.8365), 'cv_macro_f1_std': np.float64(0.0098), 'train_s': 0.1712, 'st_macro_f1': 0.844, 'st_precision_pos': 0.6352, 'st_recall_pos': 0.9232, 'st_log_loss': 0.2438, 'st_top1_acc': 0.8398, 'st_route_continuity': np.float64(0.9109), 'st_infer_ms_per_1k_rows': 0.0467}
+== gnb
+  gnb fold 0: macro F1 0.8221
+  gnb fold 1: macro F1 0.8423
+  gnb fold 2: macro F1 0.8377
+  gnb fold 3: macro F1 0.8200
+  gnb fold 4: macro F1 0.8183
+{'model': 'gnb', 'family': 'Probabilistic', 'config': 'default var_smoothing', 'cv_macro_f1_mean': np.float64(0.8281), 'cv_macro_f1_std': np.float64(0.0099), 'train_s': 0.1091, 'st_macro_f1': 0.8231, 'st_precision_pos': 0.6056, 'st_recall_pos': 0.8873, 'st_log_loss': 0.4866, 'st_top1_acc': 0.8317, 'st_route_continuity': np.float64(0.8956), 'st_infer_ms_per_1k_rows': 0.1987}
+== knn
+  knn fold 0: macro F1 0.8828
+  knn fold 1: macro F1 0.8963
+  knn fold 2: macro F1 0.8847
+  knn fold 3: macro F1 0.9057
+  knn fold 4: macro F1 0.8676
+{'model': 'knn', 'family': 'Instance-based', 'config': 'k=25, distance-weighted', 'cv_macro_f1_mean': np.float64(0.8874), 'cv_macro_f1_std': np.float64(0.0129), 'train_s': 0.1524, 'st_macro_f1': 0.9036, 'st_precision_pos': 0.8532, 'st_recall_pos': 0.8259, 'st_log_loss': 0.1822, 'st_top1_acc': 0.8425, 'st_route_continuity': np.float64(0.9138), 'st_infer_ms_per_1k_rows': 22.8594}
+== rf
+  rf fold 0: macro F1 0.8659
+  rf fold 1: macro F1 0.8976
+  rf fold 2: macro F1 0.8782
+  rf fold 3: macro F1 0.8983
+  rf fold 4: macro F1 0.8617
+{'model': 'rf', 'family': 'Ensemble (bagging)', 'config': '200 trees, depth 14', 'cv_macro_f1_mean': np.float64(0.8803), 'cv_macro_f1_std': np.float64(0.0154), 'train_s': 17.9755, 'st_macro_f1': 0.8844, 'st_precision_pos': 0.7166, 'st_recall_pos': 0.942, 'st_log_loss': 0.1724, 'st_top1_acc': 0.8496, 'st_route_continuity': np.float64(0.9159), 'st_infer_ms_per_1k_rows': 2.7048}
+== lgbm
+  lgbm fold 0: macro F1 0.8623
+  lgbm fold 1: macro F1 0.8955
+  lgbm fold 2: macro F1 0.8736
+  lgbm fold 3: macro F1 0.8954
+  lgbm fold 4: macro F1 0.8590
+{'model': 'lgbm', 'family': 'Boosting', 'config': '300 trees, lr 0.05, 31 leaves', 'cv_macro_f1_mean': np.float64(0.8772), 'cv_macro_f1_std': np.float64(0.0157), 'train_s': 2.4334, 'st_macro_f1': 0.8791, 'st_precision_pos': 0.7012, 'st_recall_pos': 0.9482, 'st_log_loss': 0.1769, 'st_top1_acc': 0.8555, 'st_route_continuity': np.float64(0.92), 'st_infer_ms_per_1k_rows': 2.766}
+== mlp
+  mlp fold 0: macro F1 0.8877
+  mlp fold 1: macro F1 0.9011
+  mlp fold 2: macro F1 0.8919
+  mlp fold 3: macro F1 0.9087
+  mlp fold 4: macro F1 0.8711
+{'model': 'mlp', 'family': 'Neural network', 'config': '64-32 ReLU, Adam, early stop', 'cv_macro_f1_mean': np.float64(0.8921), 'cv_macro_f1_std': np.float64(0.0128), 'train_s': 14.0303, 'st_macro_f1': 0.9048, 'st_precision_pos': 0.865, 'st_recall_pos': 0.8181, 'st_log_loss': 0.1291, 'st_top1_acc': 0.8485, 'st_route_continuity': np.float64(0.9167), 'st_infer_ms_per_1k_rows': 0.3792}

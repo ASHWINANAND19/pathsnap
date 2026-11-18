@@ -1,9 +1,0 @@
-[I 2026-11-18 11:21:45,874] A new study created in memory with name: no-name-909a2294-5519-49ca-aede-4e260f416153
-/Users/ashwin/Desktop/ML HACKATHON/.venv/lib/python3.12/site-packages/sklearn/neural_network/_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (60) reached and the optimization hasn't converged yet.
-  warnings.warn(
-[I 2026-11-18 11:22:50,507] Trial 0 finished with value: 0.8917113941842383 and parameters: {'hidden_layers': '64', 'alpha': 4.207053950287933e-05, 'learning_rate_init': 0.00013066739238053285, 'batch_size': 128}. Best is trial 0 with value: 0.8917113941842383.
-/Users/ashwin/Desktop/ML HACKATHON/.venv/lib/python3.12/site-packages/sklearn/neural_network/_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (60) reached and the optimization hasn't converged yet.
-  warnings.warn(
-/Users/ashwin/Desktop/ML HACKATHON/.venv/lib/python3.12/site-packages/sklearn/neural_network/_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (60) reached and the optimization hasn't converged yet.
-  warnings.warn(
-[I 2026-11-18 11:23:17,312] Trial 1 finished with value: 0.8923685403533707 and parameters: {'hidden_layers': '32', 'alpha': 0.00016480446427978953, 'learning_rate_init': 0.0011207606211860576, 'batch_size': 512}. Best is trial 1 with value: 0.8923685403533707.

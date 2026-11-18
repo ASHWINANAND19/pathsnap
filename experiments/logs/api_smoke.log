@@ -1,0 +1,16 @@
+11:24:42 | Model loaded. Serving trips from /Users/ashwin/Desktop/ML HACKATHON/data/student_test
+INFO:     Started server process [4667]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+11:24:52 | GET /trips -> 10 trips from student_test
+INFO:     127.0.0.1:50276 - "GET /trips HTTP/1.1" 200 OK
+11:24:52 | POST /predict trip=00000009 ...
+11:24:52 |   trip=00000009 points=1014 candidates=7649 time=509.7ms metrics={'route_continuity': 0.9299, 'has_reference': True, 'top1_accuracy': 0.8185, 'route_arc_precision': 0.8959, 'route_arc_recall': 0.8228}
+INFO:     127.0.0.1:50278 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50280 - "POST /predict HTTP/1.1" 404 Not Found
+11:25:13 | GET /trips -> 10 trips from student_test
+INFO:     127.0.0.1:50305 - "GET /trips HTTP/1.1" 200 OK
+11:25:19 | POST /predict trip=00000000 ...
+11:25:20 |   trip=00000000 points=2479 candidates=9720 time=696.9ms metrics={'route_continuity': 0.9919, 'has_reference': True, 'top1_accuracy': 0.9431, 'route_arc_precision': 0.8622, 'route_arc_recall': 0.9441}
+INFO:     127.0.0.1:50310 - "POST /predict HTTP/1.1" 200 OK
